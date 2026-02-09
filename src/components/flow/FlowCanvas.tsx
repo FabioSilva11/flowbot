@@ -86,9 +86,12 @@ export function FlowCanvas() {
   const onDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
-      event.stopPropagation();
 
-      const type = event.dataTransfer.getData('application/reactflow') as NodeType;
+      // Try application/reactflow first, fallback to text/plain
+      let type = event.dataTransfer.getData('application/reactflow') as NodeType;
+      if (!type) {
+        type = event.dataTransfer.getData('text/plain') as NodeType;
+      }
       
       console.log('[FlowCanvas] Drop event fired, type:', type, 'instance:', !!reactFlowInstance);
 
