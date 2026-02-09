@@ -74,6 +74,7 @@ export function NodesSidebar() {
 
   const onDragStart = (event: React.DragEvent, nodeType: NodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.setData('text/plain', nodeType);
     event.dataTransfer.effectAllowed = 'move';
   };
 
