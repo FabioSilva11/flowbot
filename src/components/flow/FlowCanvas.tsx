@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, DragEvent } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -54,6 +54,8 @@ const defaultNodeData: Record<NodeType, Partial<FlowNodeData>> = {
   delay: { label: 'Atraso', delay: 5, delayUnit: 'seconds' },
 };
 
+const validNodeTypes: NodeType[] = ['start', 'message', 'condition', 'buttonReply', 'action', 'delay'];
+
 export function FlowCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -76,22 +78,36 @@ export function FlowCanvas() {
     [setEdges]
   );
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
+  const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
   const onDrop = useCallback(
-    (event: React.DragEvent) => {
+    (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+      event.stopPropagation();
 
       const type = event.dataTransfer.getData('application/reactflow') as NodeType;
-      if (!type || !reactFlowInstance) return;
+      
+      console.log('[FlowCanvas] Drop event fired, type:', type, 'instance:', !!reactFlowInstance);
+
+      if (!type || !validNodeTypes.includes(type)) {
+        console.warn('[FlowCanvas] Invalid node type:', type);
+        return;
+      }
+      
+      if (!reactFlowInstance) {
+        console.warn('[FlowCanvas] ReactFlow instance not ready');
+        return;
+      }
 
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
+
+      console.log('[FlowCanvas] Creating node at position:', position);
 
       const newNode: FlowNode = {
         id: getNewId(),
@@ -103,24 +119,31 @@ export function FlowCanvas() {
         } as FlowNodeData,
       };
 
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((nds) => [...nds, newNode]);
     },
     [reactFlowInstance, setNodes]
   );
 
   return (
-    <div ref={reactFlowWrapper} className="h-full w-full">
+    <div
+      ref={reactFlowWrapper}
+      className="h-full w-full"
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onInit={setReactFlowInstance}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onInit={(instance) => {
+          console.log('[FlowCanvas] ReactFlow instance initialized');
+          setReactFlowInstance(instance);
+        }}
         nodeTypes={nodeTypes}
-        fitView
         snapToGrid
         snapGrid={[16, 16]}
         defaultEdgeOptions={{
