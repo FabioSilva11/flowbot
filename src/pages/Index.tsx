@@ -1,11 +1,19 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { NodesSidebar } from '@/components/flow/NodesSidebar';
+import { FlowCanvas } from '@/components/flow/FlowCanvas';
+import { FlowToolbar } from '@/components/flow/FlowToolbar';
+import { ReactFlowProvider } from '@xyflow/react';
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
+      <NodesSidebar />
+      <div className="flex flex-1 flex-col">
+        <FlowToolbar />
+        <div className="flex-1">
+          <ReactFlowProvider>
+            <FlowCanvas />
+          </ReactFlowProvider>
+        </div>
       </div>
     </div>
   );
