@@ -12,15 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
-    if (!TELEGRAM_BOT_TOKEN) {
-      return new Response(
-        JSON.stringify({ error: "Bot token not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const { nodes, edges, botName, action } = await req.json();
+    const { nodes, edges, botId, action } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabase = createClient(
@@ -28,39 +20,74 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    if (!botId) {
+      return new Response(
+        JSON.stringify({ error: "botId is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get bot record to fetch token
+    const { data: bot, error: botError } = await supabase
+      .from("bots")
+      .select("*")
+      .eq("id", botId)
+      .maybeSingle();
+
+    if (botError || !bot) {
+      return new Response(
+        JSON.stringify({ error: "Bot not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const TELEGRAM_BOT_TOKEN = bot.telegram_token;
+
     if (action === "deactivate") {
-      // Deactivate all flows
+      // Deactivate flows for this bot
       await supabase
         .from("bot_flows")
         .update({ is_active: false })
-        .eq("is_active", true);
+        .eq("bot_id", botId);
 
-      // Remove webhook
-      const deleteRes = await fetch(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook`
-      );
-      const deleteData = await deleteRes.json();
+      await supabase
+        .from("bots")
+        .update({ is_active: false })
+        .eq("id", botId);
+
+      if (TELEGRAM_BOT_TOKEN) {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook`);
+      }
 
       return new Response(
-        JSON.stringify({ success: true, webhook: deleteData }),
+        JSON.stringify({ success: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Deactivate any existing active flows
+    if (!TELEGRAM_BOT_TOKEN) {
+      return new Response(
+        JSON.stringify({ error: "Bot token not configured. Add the Telegram token in the dashboard." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Deactivate existing flows for this bot
     await supabase
       .from("bot_flows")
       .update({ is_active: false })
-      .eq("is_active", true);
+      .eq("bot_id", botId);
 
-    // Save the new flow
+    // Save new flow
     const { data: flow, error: insertError } = await supabase
       .from("bot_flows")
       .insert({
-        bot_name: botName || "Meu Bot",
+        bot_name: bot.name,
         nodes,
         edges,
         is_active: true,
+        user_id: bot.user_id,
+        bot_id: botId,
       })
       .select()
       .single();
@@ -87,7 +114,12 @@ Deno.serve(async (req) => {
       }
     );
     const webhookResult = await setWebhookRes.json();
-    console.log("Webhook set result:", webhookResult);
+
+    // Activate bot
+    await supabase
+      .from("bots")
+      .update({ is_active: true })
+      .eq("id", botId);
 
     // Get bot info
     const botInfoRes = await fetch(

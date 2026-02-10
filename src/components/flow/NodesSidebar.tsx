@@ -13,8 +13,7 @@ import {
   MapPin,
   Globe,
 } from 'lucide-react';
-import { BotSettingsDialog } from './BotSettingsDialog';
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const nodeItems: DragItem[] = [
   {
@@ -106,7 +105,7 @@ const colorMap: Record<NodeType, string> = {
 };
 
 export function NodesSidebar() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const onDragStart = (event: React.DragEvent, nodeType: NodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
@@ -127,16 +126,16 @@ export function NodesSidebar() {
         </div>
       </div>
 
-      {/* Bot Settings Button */}
+      {/* Back to Dashboard */}
       <div className="border-b border-border px-4 py-3">
         <button
-          onClick={() => setSettingsOpen(true)}
+          onClick={() => navigate('/dashboard')}
           className="flex w-full items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"
         >
           <Settings className="h-4 w-4 text-primary" />
           <div>
-            <span className="font-medium">Credenciais do Bot</span>
-            <p className="text-[10px] text-muted-foreground">Token & Configurações</p>
+            <span className="font-medium">Voltar ao Dashboard</span>
+            <p className="text-[10px] text-muted-foreground">Gerenciar bots</p>
           </div>
         </button>
       </div>
@@ -173,7 +172,6 @@ export function NodesSidebar() {
         </p>
       </div>
 
-      <BotSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </aside>
   );
 }

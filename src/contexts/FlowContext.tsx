@@ -55,7 +55,7 @@ interface FlowContextType {
 
 const FlowContext = createContext<FlowContextType | null>(null);
 
-export function FlowProvider({ children }: { children: React.ReactNode }) {
+export function FlowProvider({ children, botId }: { children: React.ReactNode; botId?: string }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<FlowNode | null>(null);
