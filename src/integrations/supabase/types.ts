@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       bot_flows: {
         Row: {
+          bot_id: string | null
           bot_name: string
           created_at: string
           edges: Json
@@ -23,8 +24,10 @@ export type Database = {
           is_active: boolean
           nodes: Json
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          bot_id?: string | null
           bot_name?: string
           created_at?: string
           edges?: Json
@@ -32,8 +35,10 @@ export type Database = {
           is_active?: boolean
           nodes?: Json
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          bot_id?: string | null
           bot_name?: string
           created_at?: string
           edges?: Json
@@ -41,8 +46,17 @@ export type Database = {
           is_active?: boolean
           nodes?: Json
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bot_flows_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bot_sessions: {
         Row: {
@@ -81,6 +95,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bots: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          telegram_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          telegram_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          telegram_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

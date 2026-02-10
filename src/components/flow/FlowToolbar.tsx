@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-export function FlowToolbar() {
+export function FlowToolbar({ botId }: { botId?: string } = {}) {
   const { nodes, edges, undo, redo, clearCanvas, canUndo, canRedo } = useFlow();
   const [isPublishing, setIsPublishing] = useState(false);
   const [isBotActive, setIsBotActive] = useState(false);
@@ -33,7 +33,7 @@ export function FlowToolbar() {
         body: {
           nodes,
           edges,
-          botName: 'Meu Bot',
+          botId,
           action: 'activate',
         },
       });
@@ -63,7 +63,7 @@ export function FlowToolbar() {
     setIsPublishing(true);
     try {
       const { data, error } = await supabase.functions.invoke('set-telegram-webhook', {
-        body: { action: 'deactivate' },
+        body: { action: 'deactivate', botId },
       });
 
       if (error) throw error;
