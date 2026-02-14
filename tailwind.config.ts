@@ -36,6 +36,8 @@ export default {
           poll: "hsl(var(--node-poll))", contact: "hsl(var(--node-contact))", venue: "hsl(var(--node-venue))",
           dice: "hsl(var(--node-dice))", invoice: "hsl(var(--node-invoice))", editMessage: "hsl(var(--node-editMessage))",
           deleteMessage: "hsl(var(--node-deleteMessage))", mediaGroup: "hsl(var(--node-mediaGroup))",
+          chatgpt: "hsl(var(--node-chatgpt))", groq: "hsl(var(--node-groq))",
+          gemini: "hsl(var(--node-gemini))", mercadoPago: "hsl(var(--node-mercadoPago))",
         },
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Save, Undo2, Redo2, Trash2, Play, Square, Loader2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Save, Undo2, Redo2, Trash2, Play, Square, Loader2, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFlow } from '@/contexts/FlowContext';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -13,10 +13,45 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export function FlowToolbar({ botId }: { botId?: string } = {}) {
-  const { nodes, edges, undo, redo, clearCanvas, canUndo, canRedo } = useFlow();
+  const { nodes, edges, setNodes, setEdges, undo, redo, clearCanvas, canUndo, canRedo } = useFlow();
   const { plan } = useSubscription();
   const [isPublishing, setIsPublishing] = useState(false);
   const [isBotActive, setIsBotActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportFlow = () => {
+    const flowData = JSON.stringify({ nodes, edges }, null, 2);
+    const blob = new Blob([flowData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `flow-${botId || 'export'}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Fluxo exportado com sucesso!');
+  };
+
+  const importFlow = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (data.nodes && data.edges) {
+          setNodes(data.nodes);
+          setEdges(data.edges);
+          toast.success('Fluxo importado com sucesso!');
+        } else {
+          toast.error('Arquivo inválido: formato incorreto.');
+        }
+      } catch {
+        toast.error('Erro ao ler o arquivo JSON.');
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const publishBot = async () => {
     if (nodes.length <= 1) { toast.error('Adicione pelo menos um bloco além do início.'); return; }
@@ -82,6 +117,14 @@ export function FlowToolbar({ botId }: { botId?: string } = {}) {
             Gerar com IA (Pro)
           </Button>
         )}
+        <div className="mx-2 h-5 w-px bg-border" />
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground" onClick={exportFlow}>
+          <Download className="h-3.5 w-3.5" /> Exportar
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground" onClick={() => fileInputRef.current?.click()}>
+          <Upload className="h-3.5 w-3.5" /> Importar
+        </Button>
+        <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={importFlow} />
       </div>
 
       <div className="flex items-center gap-4">

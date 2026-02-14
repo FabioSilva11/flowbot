@@ -1,4 +1,4 @@
-import { X, MessageSquare, GitBranch, MousePointerClick, Zap, Timer, Play, ImageIcon, MessageCircleQuestion, MapPin, Globe, Video, Music, FileText, Film, Smile, BarChart3, Phone, Home, Dices, CreditCard, Pencil, Trash2, Images } from 'lucide-react';
+import { X, MessageSquare, GitBranch, MousePointerClick, Zap, Timer, Play, ImageIcon, MessageCircleQuestion, MapPin, Globe, Video, Music, FileText, Film, Smile, BarChart3, Phone, Home, Dices, CreditCard, Pencil, Trash2, Images, Bot, Cpu, Sparkles, QrCode } from 'lucide-react';
 import { FileUploadField } from './FileUploadField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,8 @@ const iconMap: Record<NodeType, React.ReactNode> = {
   dice: <Dices className="h-4 w-4" />, invoice: <CreditCard className="h-4 w-4" />,
   editMessage: <Pencil className="h-4 w-4" />, deleteMessage: <Trash2 className="h-4 w-4" />,
   mediaGroup: <Images className="h-4 w-4" />,
+  chatgpt: <Bot className="h-4 w-4" />, groq: <Cpu className="h-4 w-4" />,
+  gemini: <Sparkles className="h-4 w-4" />, mercadoPago: <QrCode className="h-4 w-4" />,
 };
 
 const colorMap: Record<NodeType, string> = {
@@ -33,6 +35,8 @@ const colorMap: Record<NodeType, string> = {
   poll: 'text-node-poll', contact: 'text-node-contact', venue: 'text-node-venue',
   dice: 'text-node-dice', invoice: 'text-node-invoice', editMessage: 'text-node-editMessage',
   deleteMessage: 'text-node-deleteMessage', mediaGroup: 'text-node-mediaGroup',
+  chatgpt: 'text-node-chatgpt', groq: 'text-node-groq',
+  gemini: 'text-node-gemini', mercadoPago: 'text-node-mercadoPago',
 };
 
 export function NodeEditorPanel() {
@@ -448,6 +452,130 @@ export function NodeEditorPanel() {
               </div>
             ))}
             <Button variant="outline" size="sm" className="w-full" onClick={() => updateNodeData(selectedNode.id, { mediaGroupItems: [...(selectedNode.data.mediaGroupItems || []), { type: 'photo', url: '', caption: '' }] })}>Adicionar mídia</Button>
+          </div>
+        )}
+
+        {/* ChatGPT */}
+        {nodeType === 'chatgpt' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API URL</Label>
+              <Input value={String(selectedNode.data.aiApiUrl || 'https://api.openai.com/v1/chat/completions')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiUrl: e.target.value })} className="h-9 font-mono text-sm" placeholder="https://api.openai.com/v1/chat/completions" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API Key</Label>
+              <Input type="password" value={String(selectedNode.data.aiApiKey || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiKey: e.target.value })} className="h-9 font-mono text-sm" placeholder="sk-..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Modelo</Label>
+              <Select value={String(selectedNode.data.aiModel || 'gpt-4')} onValueChange={(v) => updateNodeData(selectedNode.id, { aiModel: v })}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpt-4">GPT-4</SelectItem>
+                  <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                  <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Prompt</Label>
+              <Textarea value={String(selectedNode.data.aiPrompt || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiPrompt: e.target.value })} className="min-h-[80px] resize-none" placeholder="Responda como assistente de vendas..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Salvar resposta na variável</Label>
+              <Input value={String(selectedNode.data.aiSaveVariable || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiSaveVariable: e.target.value })} className="h-9 font-mono" placeholder="ai_response" />
+            </div>
+          </div>
+        )}
+
+        {/* Groq */}
+        {nodeType === 'groq' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API URL</Label>
+              <Input value={String(selectedNode.data.aiApiUrl || 'https://api.groq.com/openai/v1/chat/completions')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiUrl: e.target.value })} className="h-9 font-mono text-sm" placeholder="https://api.groq.com/openai/v1/chat/completions" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API Key</Label>
+              <Input type="password" value={String(selectedNode.data.aiApiKey || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiKey: e.target.value })} className="h-9 font-mono text-sm" placeholder="gsk_..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Modelo</Label>
+              <Select value={String(selectedNode.data.aiModel || 'llama3-70b-8192')} onValueChange={(v) => updateNodeData(selectedNode.id, { aiModel: v })}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="llama3-70b-8192">Llama 3 70B</SelectItem>
+                  <SelectItem value="llama3-8b-8192">Llama 3 8B</SelectItem>
+                  <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
+                  <SelectItem value="gemma-7b-it">Gemma 7B</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Prompt</Label>
+              <Textarea value={String(selectedNode.data.aiPrompt || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiPrompt: e.target.value })} className="min-h-[80px] resize-none" placeholder="Responda como assistente..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Salvar resposta na variável</Label>
+              <Input value={String(selectedNode.data.aiSaveVariable || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiSaveVariable: e.target.value })} className="h-9 font-mono" placeholder="ai_response" />
+            </div>
+          </div>
+        )}
+
+        {/* Gemini */}
+        {nodeType === 'gemini' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API URL</Label>
+              <Input value={String(selectedNode.data.aiApiUrl || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiUrl: e.target.value })} className="h-9 font-mono text-sm" placeholder="URL da API Gemini" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">API Key</Label>
+              <Input type="password" value={String(selectedNode.data.aiApiKey || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiApiKey: e.target.value })} className="h-9 font-mono text-sm" placeholder="AIza..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Modelo</Label>
+              <Select value={String(selectedNode.data.aiModel || 'gemini-pro')} onValueChange={(v) => updateNodeData(selectedNode.id, { aiModel: v })}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                  <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                  <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Prompt</Label>
+              <Textarea value={String(selectedNode.data.aiPrompt || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiPrompt: e.target.value })} className="min-h-[80px] resize-none" placeholder="Responda como assistente..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Salvar resposta na variável</Label>
+              <Input value={String(selectedNode.data.aiSaveVariable || '')} onChange={(e) => updateNodeData(selectedNode.id, { aiSaveVariable: e.target.value })} className="h-9 font-mono" placeholder="ai_response" />
+            </div>
+          </div>
+        )}
+
+        {/* Mercado Pago */}
+        {nodeType === 'mercadoPago' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Access Token</Label>
+              <Input type="password" value={String(selectedNode.data.mpAccessToken || '')} onChange={(e) => updateNodeData(selectedNode.id, { mpAccessToken: e.target.value })} className="h-9 font-mono text-sm" placeholder="APP_USR-..." />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Descrição do pagamento</Label>
+              <Input value={String(selectedNode.data.mpDescription || '')} onChange={(e) => updateNodeData(selectedNode.id, { mpDescription: e.target.value })} className="h-9" placeholder="Pagamento do produto X" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+              <Input type="number" value={Number(selectedNode.data.mpAmount || 0)} onChange={(e) => updateNodeData(selectedNode.id, { mpAmount: parseInt(e.target.value) || 0 })} className="h-9" min={0} placeholder="1000 = R$10,00" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Chave Pix (e-mail, CPF, etc.)</Label>
+              <Input value={String(selectedNode.data.mpPixKey || '')} onChange={(e) => updateNodeData(selectedNode.id, { mpPixKey: e.target.value })} className="h-9" placeholder="email@exemplo.com" />
+            </div>
+            <p className="text-[10px] text-muted-foreground">Gera QR Code Pix e código copia-e-cola automaticamente via API do Mercado Pago.</p>
           </div>
         )}
       </div>
