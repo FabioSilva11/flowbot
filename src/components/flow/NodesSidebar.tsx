@@ -3,6 +3,7 @@ import {
   Play, MessageSquare, GitBranch, MousePointerClick, Zap, Timer, Bot, Settings,
   ImageIcon, MessageCircleQuestion, MapPin, Globe, Video, Music, FileText, Film,
   Smile, BarChart3, Phone, Home, Dices, CreditCard, Pencil, Trash2, Images, Lock,
+  Cpu, Sparkles, QrCode,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -33,6 +34,10 @@ const nodeItems: DragItem[] = [
   { type: 'action', label: 'Ação', icon: 'action', description: 'Executar ação ou API' },
   { type: 'httpRequest', label: 'HTTP Request', icon: 'httpRequest', description: 'Fazer requisição HTTP/API' },
   { type: 'delay', label: 'Atraso', icon: 'delay', description: 'Aguardar antes de continuar' },
+  { type: 'chatgpt', label: 'ChatGPT', icon: 'chatgpt', description: 'IA via API OpenAI' },
+  { type: 'groq', label: 'Groq', icon: 'groq', description: 'IA ultra-rápida via Groq' },
+  { type: 'gemini', label: 'Gemini', icon: 'gemini', description: 'IA Google Gemini' },
+  { type: 'mercadoPago', label: 'Mercado Pago', icon: 'mercadoPago', description: 'Pagamento Pix QR Code' },
 ];
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -59,6 +64,10 @@ const iconMap: Record<string, React.ReactNode> = {
   editMessage: <Pencil className="h-4 w-4" />,
   deleteMessage: <Trash2 className="h-4 w-4" />,
   mediaGroup: <Images className="h-4 w-4" />,
+  chatgpt: <Bot className="h-4 w-4" />,
+  groq: <Cpu className="h-4 w-4" />,
+  gemini: <Sparkles className="h-4 w-4" />,
+  mercadoPago: <QrCode className="h-4 w-4" />,
 };
 
 const colorMap: Record<NodeType, string> = {
@@ -85,14 +94,18 @@ const colorMap: Record<NodeType, string> = {
   editMessage: 'border-node-editMessage/40 hover:border-node-editMessage/70 text-node-editMessage bg-node-editMessage/5 hover:bg-node-editMessage/10',
   deleteMessage: 'border-node-deleteMessage/40 hover:border-node-deleteMessage/70 text-node-deleteMessage bg-node-deleteMessage/5 hover:bg-node-deleteMessage/10',
   mediaGroup: 'border-node-mediaGroup/40 hover:border-node-mediaGroup/70 text-node-mediaGroup bg-node-mediaGroup/5 hover:bg-node-mediaGroup/10',
+  chatgpt: 'border-node-chatgpt/40 hover:border-node-chatgpt/70 text-node-chatgpt bg-node-chatgpt/5 hover:bg-node-chatgpt/10',
+  groq: 'border-node-groq/40 hover:border-node-groq/70 text-node-groq bg-node-groq/5 hover:bg-node-groq/10',
+  gemini: 'border-node-gemini/40 hover:border-node-gemini/70 text-node-gemini bg-node-gemini/5 hover:bg-node-gemini/10',
+  mercadoPago: 'border-node-mercadoPago/40 hover:border-node-mercadoPago/70 text-node-mercadoPago bg-node-mercadoPago/5 hover:bg-node-mercadoPago/10',
 };
 
 export function NodesSidebar() {
   const navigate = useNavigate();
-  const { plan } = useSubscription();
+  const { plan, loading: subLoading } = useSubscription();
 
   const onDragStart = (event: React.DragEvent, nodeType: NodeType) => {
-    if (isBlockLocked(nodeType, plan)) {
+    if (!subLoading && isBlockLocked(nodeType, plan)) {
       event.preventDefault();
       toast.error('Bloco disponível apenas no plano Pro ou superior. Faça upgrade!');
       return;
@@ -133,7 +146,7 @@ export function NodesSidebar() {
         </h2>
         <div className="space-y-2">
           {nodeItems.map((item) => {
-            const locked = isBlockLocked(item.type, plan);
+            const locked = !subLoading && isBlockLocked(item.type, plan);
             return (
               <div
                 key={item.type}

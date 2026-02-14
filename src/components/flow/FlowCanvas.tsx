@@ -34,6 +34,10 @@ import { InvoiceNode } from './nodes/InvoiceNode';
 import { EditMessageNode } from './nodes/EditMessageNode';
 import { DeleteMessageNode } from './nodes/DeleteMessageNode';
 import { MediaGroupNode } from './nodes/MediaGroupNode';
+import { ChatGPTNode } from './nodes/ChatGPTNode';
+import { GroqNode } from './nodes/GroqNode';
+import { GeminiNode } from './nodes/GeminiNode';
+import { MercadoPagoNode } from './nodes/MercadoPagoNode';
 import { useFlow } from '@/contexts/FlowContext';
 
 const nodeTypes = {
@@ -60,9 +64,13 @@ const nodeTypes = {
   editMessage: EditMessageNode,
   deleteMessage: DeleteMessageNode,
   mediaGroup: MediaGroupNode,
+  chatgpt: ChatGPTNode,
+  groq: GroqNode,
+  gemini: GeminiNode,
+  mercadoPago: MercadoPagoNode,
 };
 
-const validNodeTypes: NodeType[] = ['start', 'message', 'condition', 'buttonReply', 'action', 'delay', 'image', 'userInput', 'location', 'httpRequest', 'video', 'audio', 'document', 'animation', 'sticker', 'poll', 'contact', 'venue', 'dice', 'invoice', 'editMessage', 'deleteMessage', 'mediaGroup'];
+const validNodeTypes: NodeType[] = ['start', 'message', 'condition', 'buttonReply', 'action', 'delay', 'image', 'userInput', 'location', 'httpRequest', 'video', 'audio', 'document', 'animation', 'sticker', 'poll', 'contact', 'venue', 'dice', 'invoice', 'editMessage', 'deleteMessage', 'mediaGroup', 'chatgpt', 'groq', 'gemini', 'mercadoPago'];
 
 export function FlowCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -135,6 +143,8 @@ export function FlowCanvas() {
               poll: 'hsl(210, 70%, 50%)', contact: 'hsl(160, 60%, 45%)', venue: 'hsl(25, 75%, 50%)',
               dice: 'hsl(280, 65%, 55%)', invoice: 'hsl(145, 65%, 45%)', editMessage: 'hsl(55, 75%, 50%)',
               deleteMessage: 'hsl(0, 65%, 45%)', mediaGroup: 'hsl(230, 65%, 55%)',
+              chatgpt: 'hsl(160, 80%, 40%)', groq: 'hsl(20, 90%, 55%)', gemini: 'hsl(220, 80%, 60%)',
+              mercadoPago: 'hsl(195, 100%, 45%)',
             };
             return colors[node.type || ''] || 'hsl(220, 15%, 30%)';
           }}
