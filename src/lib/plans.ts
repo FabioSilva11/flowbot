@@ -5,7 +5,7 @@ export const PLANS = {
     priceId: null,
     productId: null,
     maxBots: 1,
-    features: ['Editor visual', '1 bot', 'Blocos básicos', 'Suporte comunidade'],
+    features: ['Editor visual', '1 bot', 'Telegram + WhatsApp + Discord', 'Blocos básicos', 'Suporte comunidade'],
   },
   pro: {
     name: 'Pro',
@@ -21,7 +21,7 @@ export const PLANS = {
     priceId: 'price_1SzVxAKvkCUCDLj5GM467AeX',
     productId: 'prod_TxQoQZOZqdtyug',
     maxBots: 11,
-    features: ['Tudo do Pro', '11 bots', 'White-label', 'Webhooks avançados', 'Telegram + WhatsApp + Discord', 'Suporte dedicado'],
+    features: ['Tudo do Pro', '11 bots', 'Webhooks avançados', 'Telegram + WhatsApp + Discord', 'Suporte dedicado'],
   },
 } as const;
 
