@@ -1,63 +1,72 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bot, MessageSquare, GitBranch, Zap, Timer, Shield, Briefcase, Star,
   ArrowRight, Sparkles, Check, Users, TrendingUp, Clock, DollarSign, Lock,
-  ChevronRight, Rocket, Globe, Eye, Target, Heart, Award,
+  ChevronRight, Rocket, Globe, MessageCircle, Hash,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 import editorPreview from '@/assets/editor-preview.jpg';
 
+const platforms = [
+  { name: 'Telegram', emoji: '✈️', desc: 'Bots completos com mensagens, botões, enquetes, pagamentos e mais.' },
+  { name: 'WhatsApp', emoji: '💬', badge: 'BETA', desc: 'WhatsApp Business Cloud API: mensagens, botões interativos e templates.' },
+  { name: 'Discord', emoji: '🎮', badge: 'BETA', desc: 'Slash commands, embeds, botões e interações no seu servidor.' },
+];
+
 const urgencyReasons = [
-  { icon: Users, title: 'Atendimento infinito sem contratar ninguém', desc: 'Economize horas e dinheiro com bots que respondem 24h.' },
-  { icon: TrendingUp, title: 'Vendas 24h no piloto automático', desc: 'Capture leads, envie catálogos, feche vendas direto no chat.' },
-  { icon: Zap, title: 'Engajamento altíssimo', desc: 'Taxas de abertura muito maiores que Instagram/WhatsApp.' },
-  { icon: DollarSign, title: 'Custo baixo, retorno rápido', desc: 'Comece grátis, escale por R$49/mês.' },
-  { icon: Lock, title: 'Segurança total', desc: 'Tokens criptografados, dados protegidos.' },
+  { icon: Users, title: 'Atendimento 24/7 em 3 plataformas', desc: 'Bots respondem no Telegram, WhatsApp e Discord simultaneamente.' },
+  { icon: TrendingUp, title: 'Vendas no piloto automático', desc: 'Capture leads, envie catálogos e feche vendas em qualquer chat.' },
+  { icon: Zap, title: 'Engajamento altíssimo', desc: 'Taxas de abertura muito maiores que email ou redes sociais.' },
+  { icon: DollarSign, title: 'Custo baixo, retorno rápido', desc: 'Comece grátis com todas as plataformas, escale por R$49/mês.' },
+  { icon: Lock, title: 'Segurança total', desc: 'Tokens criptografados, dados protegidos por RLS.' },
+  { icon: Globe, title: 'Multiplataforma nativo', desc: 'Um editor, três plataformas. Mesmo fluxo, alcance máximo.' },
 ];
 
 const features = [
-  { icon: MessageSquare, title: 'Mensagens Dinâmicas', desc: 'Envie textos, imagens, docs automaticamente.' },
-  { icon: GitBranch, title: 'Fluxos Condicionais', desc: 'Ramificações inteligentes baseadas nas respostas.' },
-  { icon: Zap, title: 'Ações & APIs', desc: 'Integre CRM, pagamentos, Google Sheets etc.' },
-  { icon: Timer, title: 'Atrasos Programados', desc: 'Timing perfeito para conversão.' },
-  { icon: Briefcase, title: 'Multi-Bot', desc: 'Gerencie dezenas de bots em uma conta só.' },
-  { icon: Shield, title: 'Seguro & Privado', desc: 'Tudo criptografado.' },
+  { icon: MessageSquare, title: 'Mensagens Dinâmicas', desc: 'Textos, imagens, vídeos, docs e áudios em qualquer plataforma.' },
+  { icon: GitBranch, title: 'Fluxos Condicionais', desc: 'Ramificações inteligentes baseadas nas respostas do usuário.' },
+  { icon: Zap, title: 'Ações & APIs', desc: 'Integre CRM, pagamentos, Google Sheets, webhooks e mais.' },
+  { icon: Timer, title: 'Atrasos Programados', desc: 'Timing perfeito para nutrição de leads e conversão.' },
+  { icon: Briefcase, title: 'Multi-Bot & Multi-Plataforma', desc: 'Gerencie dezenas de bots em Telegram, WhatsApp e Discord.' },
+  { icon: Shield, title: 'IA Integrada', desc: 'ChatGPT, Gemini e Groq direto nos seus fluxos.' },
 ];
 
 const plans = [
-  { name: 'Starter', price: 'Grátis', sub: '1 bot · Telegram', features: ['Editor visual drag & drop', '1 bot', 'Blocos básicos', 'Suporte comunidade'], highlight: false },
-  { name: 'Pro', price: 'R$ 49/mês', sub: '5 bots · Multiplataforma', features: ['Tudo do Starter', '5 bots', 'Todos os blocos', 'Telegram + WhatsApp + Discord', 'APIs externas & IA', 'Suporte prioritário'], highlight: true, badge: '🔥 Mais Popular' },
-  { name: 'Enterprise', price: 'R$ 149/mês', sub: '11 bots · Multiplataforma', features: ['Tudo do Pro', '11 bots', 'White-label', 'Webhooks avançados', 'Telegram + WhatsApp + Discord', 'Suporte dedicado'], highlight: false },
+  { name: 'Starter', price: 'Grátis', sub: '1 bot · Todas as plataformas', features: ['Editor visual drag & drop', '1 bot', 'Telegram + WhatsApp + Discord', 'Blocos básicos', 'Suporte comunidade'], highlight: false },
+  { name: 'Pro', price: 'R$ 49/mês', sub: '5 bots · Todas as plataformas', features: ['Tudo do Starter', '5 bots', 'Todos os blocos', 'Telegram + WhatsApp + Discord', 'APIs externas & IA', 'Suporte prioritário'], highlight: true, badge: '🔥 Mais Popular' },
+  { name: 'Enterprise', price: 'R$ 149/mês', sub: '11 bots · Todas as plataformas', features: ['Tudo do Pro', '11 bots', 'Webhooks avançados', 'Telegram + WhatsApp + Discord', 'Suporte dedicado'], highlight: false },
 ];
 
 const testimonials = [
-  { text: '"Criei bots de atendimento e vendas em 30 min. Meu faturamento subiu 3x!"', name: 'Carlos M.', role: 'Empreendedor Digital', stars: 5 },
-  { text: '"Gerencio 8 bots diferentes. Economia de tempo absurda."', name: 'Ana P.', role: 'Social Media Manager', stars: 5 },
+  { text: '"Criei bots para Telegram e WhatsApp ao mesmo tempo. Meu faturamento subiu 3x!"', name: 'Carlos M.', role: 'Empreendedor Digital', stars: 5 },
+  { text: '"Gerencio 8 bots em 3 plataformas diferentes. Economia de tempo absurda."', name: 'Ana P.', role: 'Social Media Manager', stars: 5 },
   { text: '"Editor visual incrível. Comecei grátis e migrei pro Pro na semana."', name: 'Rafael S.', role: 'Dev Freelancer', stars: 5 },
 ];
 
 const howItWorks = [
   { step: '01', title: 'Crie sua conta', desc: 'Cadastre-se gratuitamente em menos de 30 segundos.' },
   { step: '02', title: 'Monte seu fluxo', desc: 'Arraste e solte blocos no editor visual para criar a lógica do bot.' },
-  { step: '03', title: 'Conecte à plataforma', desc: 'Telegram, WhatsApp ou Discord — configure em poucos cliques.' },
-  { step: '04', title: 'Lucre no automático', desc: 'Seu bot atende, vende e engaja 24/7 sem parar.' },
+  { step: '03', title: 'Escolha a plataforma', desc: 'Telegram, WhatsApp ou Discord — configure em poucos cliques.' },
+  { step: '04', title: 'Lucre no automático', desc: 'Seu bot atende, vende e engaja 24/7 em todas as plataformas.' },
 ];
 
 const metrics = [
-  { value: '22M+', label: 'Usuários de Telegram no Brasil' },
-  { value: '98%', label: 'Taxa de abertura de mensagens' },
-  { value: '24/7', label: 'Atendimento automatizado' },
+  { value: '3', label: 'Plataformas Suportadas' },
+  { value: '98%', label: 'Taxa de abertura' },
+  { value: '24/7', label: 'Atendimento na nuvem' },
   { value: '3x', label: 'Aumento médio em vendas' },
 ];
 
 const faqs = [
-  { q: 'Quais plataformas são suportadas?', a: 'Telegram (100% funcional), WhatsApp Business (Beta) via Cloud API da Meta, e Discord (Beta) com slash commands e embeds. Novas plataformas são adicionadas frequentemente.' },
+  { q: 'Quais plataformas são suportadas?', a: 'Telegram (100% funcional), WhatsApp Business (Beta) via Cloud API da Meta, e Discord (Beta) com slash commands, embeds e botões. Novas plataformas são adicionadas frequentemente.' },
   { q: 'Preciso programar?', a: 'Não! Arraste e solte blocos no editor visual. Sem uma linha de código.' },
-  { q: 'Quanto tempo pra ver resultado?', a: 'Muitos usuários veem leads chegando na primeira semana após configurar seus bots.' },
+  { q: 'Posso usar as 3 plataformas no plano grátis?', a: 'Sim! Todos os planos suportam Telegram, WhatsApp e Discord. O plano grátis permite 1 bot em qualquer plataforma.' },
   { q: 'O bot funciona quando eu não estou online?', a: 'Sim! Seus bots rodam 24/7 na nuvem, respondendo automaticamente mesmo quando você está offline.' },
   { q: 'Posso cancelar a qualquer momento?', a: 'Sim! Cancele quando quiser sem burocracia. Sem fidelidade.' },
+  { q: 'Como funciona o WhatsApp Business?', a: 'Usamos a Cloud API oficial da Meta. Você precisa de uma conta Meta Business com o WhatsApp Business API configurado. Suportamos mensagens de texto, imagens, botões interativos e templates.' },
+  { q: 'Como funciona o Discord?', a: 'Criamos bots usando a API oficial do Discord. Suportamos slash commands, embeds ricos, botões interativos e respostas automáticas no seu servidor.' },
 ];
 
 export default function Landing() {
@@ -91,24 +100,31 @@ export default function Landing() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[#00BFFF]/5 blur-[120px]" />
         <div className="relative mx-auto max-w-4xl text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#00BFFF]/30 bg-[#00BFFF]/10 px-4 py-1.5 text-sm text-[#00BFFF]">
-            <Rocket className="h-4 w-4" /> Plataforma No-Code para Bots — Telegram · WhatsApp · Discord
+            <Rocket className="h-4 w-4" /> Plataforma No-Code para Bots
           </div>
 
           <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            Automatize Seu Negócio em{' '}
-            <span className="text-[#00BFFF]">Qualquer Plataforma</span>
+            Bots para{' '}
+            <span className="text-[#00BFFF]">Telegram</span>,{' '}
+            <span className="text-[#25D366]">WhatsApp</span> e{' '}
+            <span className="text-[#5865F2]">Discord</span>
           </h1>
 
           <p className="mx-auto mb-6 max-w-2xl text-base sm:text-lg text-white/60 leading-relaxed">
-            Crie bots para <strong className="text-white">Telegram, WhatsApp e Discord</strong> com
+            Crie bots profissionais para <strong className="text-white">3 plataformas</strong> com
             editor visual drag & drop. Automatize atendimento, vendas e engajamento
             <strong className="text-[#00BFFF]"> 24/7</strong> sem escrever código.
           </p>
 
-          <p className="mx-auto mb-8 max-w-xl text-sm sm:text-base text-white/50">
-            Bots profissionais em minutos: atendimento infinito, vendas automáticas,
-            leads qualificados e engajamento altíssimo.
-          </p>
+          {/* Platform badges */}
+          <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
+            {platforms.map((p) => (
+              <div key={p.name} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+                <span>{p.emoji}</span> {p.name}
+                {p.badge && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-yellow-500/50 text-yellow-400">{p.badge}</Badge>}
+              </div>
+            ))}
+          </div>
 
           <Link to="/auth?mode=signup">
             <Button
@@ -133,6 +149,32 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Platforms Section */}
+      <section className="border-t border-white/5 px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-4 text-center text-3xl sm:text-4xl font-bold text-white">
+            Uma Plataforma, <span className="text-[#00BFFF]">3 Canais</span>
+          </h2>
+          <p className="mb-12 text-center text-white/50">Mesmo editor, mesmo fluxo. Publique onde seu público está.</p>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {platforms.map((p) => (
+              <div key={p.name} className="group rounded-xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-[#00BFFF]/30 hover:bg-[#00BFFF]/5">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="text-3xl">{p.emoji}</span>
+                  <div>
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      {p.name}
+                      {p.badge && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-yellow-500/50 text-yellow-400">{p.badge}</Badge>}
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-sm text-white/50">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Editor Preview */}
       <section className="border-t border-white/5 px-6 py-20">
         <div className="mx-auto max-w-5xl">
@@ -141,7 +183,7 @@ export default function Landing() {
           </h2>
           <p className="mb-10 text-center text-white/50">Arraste, solte e conecte blocos — sem código, sem complicação.</p>
           <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-2 shadow-[0_0_60px_rgba(0,191,255,0.08)]">
-            <img src={editorPreview} alt="FlowBot Editor Visual - Interface de criação de bots" className="w-full rounded-xl" />
+            <img src={editorPreview} alt="FlowBot Editor Visual - Interface de criação de bots multiplataforma" className="w-full rounded-xl" />
           </div>
         </div>
       </section>
@@ -150,24 +192,9 @@ export default function Landing() {
       <section className="border-t border-white/5 px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <h2 className="mb-4 text-center text-3xl sm:text-4xl font-bold text-white">
-            Por que Você <span className="text-[#00BFFF]">PRECISA</span> Automatizar Seu Negócio no Telegram Hoje?
+            Por que Você <span className="text-[#00BFFF]">PRECISA</span> Automatizar Hoje?
           </h2>
           <p className="mb-12 text-center text-white/50">Quem não automatiza, perde clientes para quem automatiza.</p>
-
-          {/* Multi-platform badges */}
-          <div className="mb-10 flex flex-wrap items-center justify-center gap-3">
-            {[
-              { name: 'Telegram', emoji: '✈️' },
-              { name: 'WhatsApp', emoji: '💬', badge: 'BETA' },
-              { name: 'Discord', emoji: '#', badge: 'BETA' },
-            ].map((p) => (
-              <div key={p.name} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
-                <span>{p.emoji}</span> {p.name}
-                {p.badge && <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-[10px] font-bold text-yellow-400">{p.badge}</span>}
-              </div>
-            ))}
-          </div>
-
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {urgencyReasons.map((r) => (
               <div key={r.title} className="group rounded-xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:border-[#00BFFF]/30 hover:bg-[#00BFFF]/5">
@@ -207,7 +234,7 @@ export default function Landing() {
       <section className="border-t border-white/5 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl sm:text-4xl font-bold text-white">
-            Ferramentas que Seus Concorrentes <span className="text-[#00BFFF]">Já Usam</span> para Lucrar Mais
+            Ferramentas <span className="text-[#00BFFF]">Poderosas</span> para Todas as Plataformas
           </h2>
           <p className="mb-12 text-center text-white/50">Tudo que você precisa para criar bots profissionais</p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -230,7 +257,7 @@ export default function Landing() {
           <h2 className="mb-4 text-center text-3xl sm:text-4xl font-bold text-white">
             Planos & <span className="text-[#00BFFF]">Preços</span>
           </h2>
-          <p className="mb-12 text-center text-white/50">Comece grátis, escale quando quiser</p>
+          <p className="mb-12 text-center text-white/50">Todas as plataformas em todos os planos. Comece grátis.</p>
           <div className="grid gap-6 sm:grid-cols-3">
             {plans.map((p) => (
               <div
@@ -300,7 +327,7 @@ export default function Landing() {
       <section className="border-t border-white/5 px-6 py-20">
         <div className="mx-auto max-w-2xl">
           <h2 className="mb-12 text-center text-3xl sm:text-4xl font-bold text-white">
-            Perguntas que <span className="text-[#00BFFF]">Todo Mundo</span> Tem
+            Perguntas <span className="text-[#00BFFF]">Frequentes</span>
           </h2>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((f, i) => (
@@ -317,8 +344,9 @@ export default function Landing() {
       <section className="border-t border-white/5 px-6 py-20">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-white">
-            Não Perca Mais Uma Noite Sem Automatizar Seu Negócio
+            Automatize Telegram, WhatsApp e Discord — Tudo de Graça
           </h2>
+          <p className="mb-8 text-white/50">Comece agora com seu primeiro bot em qualquer plataforma.</p>
           <Link to="/auth?mode=signup">
             <Button
               size="lg"
