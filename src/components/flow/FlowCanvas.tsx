@@ -7,6 +7,7 @@ import {
   BackgroundVariant,
   ReactFlowInstance,
   NodeMouseHandler,
+  EdgeMouseHandler,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -40,6 +41,9 @@ import { GeminiNode } from './nodes/GeminiNode';
 import { ScheduleNode } from './nodes/ScheduleNode';
 import { WebhookNode } from './nodes/WebhookNode';
 import { useFlow } from '@/contexts/FlowContext';
+import { Eraser } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const nodeTypes = {
   start: StartNode,
@@ -77,6 +81,7 @@ const validNodeTypes: NodeType[] = ['start', 'message', 'condition', 'buttonRepl
 export function FlowCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [eraserMode, setEraserMode] = useState(false);
   
   const {
     nodes,
@@ -86,6 +91,7 @@ export function FlowCanvas() {
     onConnect,
     addNode,
     setSelectedNode,
+    setEdges,
   } = useFlow();
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
@@ -107,14 +113,35 @@ export function FlowCanvas() {
   );
 
   const onNodeClick: NodeMouseHandler = useCallback(
-    (_, node) => { setSelectedNode(node as FlowNode); },
-    [setSelectedNode]
+    (_, node) => { if (!eraserMode) setSelectedNode(node as FlowNode); },
+    [setSelectedNode, eraserMode]
   );
 
   const onPaneClick = useCallback(() => { setSelectedNode(null); }, [setSelectedNode]);
 
+  const onEdgeClick: EdgeMouseHandler = useCallback(
+    (_, edge) => {
+      if (eraserMode) {
+        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        toast.success('Conexão removida');
+      }
+    },
+    [eraserMode, setEdges]
+  );
+
   return (
-    <div ref={reactFlowWrapper} className="h-full w-full">
+    <div ref={reactFlowWrapper} className="h-full w-full relative">
+      {/* Eraser toggle */}
+      <div className="absolute top-3 left-3 z-10">
+        <Button
+          variant={eraserMode ? 'default' : 'outline'}
+          size="sm"
+          className={`h-9 gap-1.5 text-xs ${eraserMode ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'border-border'}`}
+          onClick={() => { setEraserMode(!eraserMode); if (!eraserMode) toast.info('Modo borracha: clique nas conexões para removê-las'); }}
+        >
+          <Eraser className="h-4 w-4" /> {eraserMode ? 'Borracha ON' : 'Borracha'}
+        </Button>
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -125,12 +152,14 @@ export function FlowCanvas() {
         onDragOver={onDragOver}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
+        onEdgeClick={onEdgeClick}
         onInit={(instance) => setReactFlowInstance(instance)}
         nodeTypes={nodeTypes}
         snapToGrid
         snapGrid={[16, 16]}
         defaultEdgeOptions={{ animated: true, style: { stroke: 'hsl(200, 85%, 50%)', strokeWidth: 2 } }}
         proOptions={{ hideAttribution: true }}
+        className={eraserMode ? 'cursor-crosshair' : ''}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="hsl(220, 15%, 18%)" />
         <Controls />

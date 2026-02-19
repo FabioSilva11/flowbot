@@ -313,12 +313,15 @@ async function processNode(
     case "buttonReply":
       if (d.buttons?.length > 0) {
         const text = d.content ? replaceVars(d.content, vars) : d.label || "Escolha:";
+        // Each button gets its own row in inline_keyboard, with callback_data = button id
+        const keyboard = d.buttons.map((b: any) => [{ text: b.text, callback_data: String(b.id) }]);
         await tgCall(token, "sendMessage", {
           chat_id: chatId,
           text,
-          reply_markup: { inline_keyboard: d.buttons.map((b: any) => [{ text: b.text, callback_data: b.id }]) },
+          reply_markup: { inline_keyboard: keyboard },
         });
         await logMessage(sb, botId, flowId, chatId, "outgoing", text, "buttonReply");
+        // Save session so we can handle the callback
         await sb
           .from("bot_sessions")
           .upsert(
@@ -474,11 +477,36 @@ Deno.serve(async (req) => {
       if (session?.current_node_id) {
         const cur = findNode(nodes, session.current_node_id);
         if (isCb && cur?.type === "buttonReply") {
+          // Try to match the specific button handle (btn-{buttonId})
           const handle = `btn-${cbData}`;
-          const se = edges.filter((e) => e.source === cur.id && e.sourceHandle === handle);
-          const edgesToFollow =
-            se.length > 0 ? se : edges.filter((e) => e.source === cur.id && e.sourceHandle === "default");
+          let edgesToFollow = edges.filter((e) => e.source === cur.id && e.sourceHandle === handle);
+          
+          // If no specific button edge found, also try matching by button text
+          if (edgesToFollow.length === 0 && cur.data.buttons) {
+            const matchedBtn = cur.data.buttons.find((b: any) => String(b.id) === cbData || b.text === cbData);
+            if (matchedBtn) {
+              const altHandle = `btn-${matchedBtn.id}`;
+              edgesToFollow = edges.filter((e) => e.source === cur.id && e.sourceHandle === altHandle);
+            }
+          }
+          
+          // Fallback to default output
+          if (edgesToFollow.length === 0) {
+            edgesToFollow = edges.filter((e) => e.source === cur.id && e.sourceHandle === "default");
+          }
+          
+          // Last resort: any outgoing edge from this node (bottom handle)
+          if (edgesToFollow.length === 0) {
+            edgesToFollow = edges.filter((e) => e.source === cur.id && !e.sourceHandle);
+          }
+          
           const vars = { ...session.variables, last_button: cbData };
+          // Find button text for variable
+          if (cur.data.buttons) {
+            const clickedBtn = cur.data.buttons.find((b: any) => String(b.id) === cbData);
+            if (clickedBtn) vars.last_button_text = clickedBtn.text;
+          }
+          
           for (const e of edgesToFollow) {
             const nn = findNode(nodes, e.target);
             if (nn) await processNode(nn, nodes, edges, token, chatId, cbData, vars, sb, flowId, currentBotId);
