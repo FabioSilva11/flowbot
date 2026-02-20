@@ -7,7 +7,12 @@ export default {
   theme: {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
-      fontFamily: { sans: ["Space Grotesk", "sans-serif"], mono: ["JetBrains Mono", "monospace"] },
+      fontFamily: { 
+        sans: ["Space Grotesk", "sans-serif"], 
+        mono: ["JetBrains Mono", "monospace"],
+        display: ["Space Grotesk", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
