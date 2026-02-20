@@ -511,23 +511,26 @@ Deno.serve(async (req) => {
             const nn = findNode(nodes, e.target);
             if (nn) await processNode(nn, nodes, edges, token, chatId, cbData, vars, sb, flowId, currentBotId);
           }
-          await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatId);
-          break;
+          // Atualiza sessão em vez de deletar — permite encadeamento de botões
+          await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatId);
+          // NÃO usa break — processa o fluxo normalmente
+
         } else if (!isCb && cur?.type === "userInput") {
           const vn = cur.data.variableName || "user_response";
           const vars = { ...session.variables, [vn]: msg };
-          await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatId);
+          // Limpa current_node_id mas mantém variáveis para o próximo passo
+          await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatId);
           await continueFrom(cur.id, nodes, edges, token, chatId, msg, vars, sb, flowId, currentBotId);
-          break;
+          // Não usa break — continua processando outros flows se houver
         }
       } else {
         const start = findStart(nodes);
         if (start) {
           const trigger = start.data.content || "/start";
           if (msg === trigger || msg === "/start") {
-            await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatId);
+            // Limpa sessão anterior e inicia fluxo do zero
+            await sb.from("bot_sessions").update({ current_node_id: null, variables: {} }).eq("flow_id", flowId).eq("telegram_chat_id", chatId);
             await processNode(start, nodes, edges, token, chatId, msg, {}, sb, flowId, currentBotId);
-            break;
           }
         }
       }

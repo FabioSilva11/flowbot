@@ -302,11 +302,14 @@ Deno.serve(async (req) => {
             const se = edges.filter((e) => e.source === cur.id && e.sourceHandle === handle);
             const edgesToFollow = se.length > 0 ? se : edges.filter((e) => e.source === cur.id && e.sourceHandle === "default");
             const vars = { ...session.variables, last_button: customId };
+            const clickedBtn = cur.data.buttons?.find((b: any) => String(b.id) === customId);
+            if (clickedBtn) vars.last_button_text = clickedBtn.text;
             for (const e of edgesToFollow) {
               const nn = findNode(nodes, e.target);
               if (nn) await processNode(nn, nodes, edges, discordToken, channelId, customId, vars, sb, flowId, currentBotId, responses);
             }
-            await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
+            // Atualiza sessão em vez de deletar
+            await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
           }
         }
 

@@ -371,27 +371,28 @@ Deno.serve(async (req) => {
           const se = edges.filter((e) => e.source === cur.id && e.sourceHandle === handle);
           const edgesToFollow = se.length > 0 ? se : edges.filter((e) => e.source === cur.id && e.sourceHandle === "default");
           const vars = { ...session.variables, last_button: buttonReplyId };
+          // Captura texto do botão
+          const clickedBtn = cur.data.buttons?.find((b: any) => String(b.id) === buttonReplyId);
+          if (clickedBtn) vars.last_button_text = clickedBtn.text;
           for (const e of edgesToFollow) {
             const nn = findNode(nodes, e.target);
             if (nn) await processNode(nn, nodes, edges, phoneNumberId, accessToken, from, buttonReplyId, vars, sb, flowId, currentBotId);
           }
-          await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
-          break;
+          // Atualiza sessão em vez de deletar — não usa break
+          await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
         } else if (!isButtonReply && cur?.type === "userInput") {
           const vn = cur.data.variableName || "user_response";
           const vars = { ...session.variables, [vn]: msgContent };
-          await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
+          await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
           await continueFrom(cur.id, nodes, edges, phoneNumberId, accessToken, from, msgContent, vars, sb, flowId, currentBotId);
-          break;
         }
       } else {
         const start = findStart(nodes);
         if (start) {
           const trigger = start.data.content || "/start";
           if (msgContent === trigger || msgContent.toLowerCase() === "oi" || msgContent.toLowerCase() === "olá" || msgContent.toLowerCase() === "menu" || msgContent.toLowerCase() === "inicio") {
-            await sb.from("bot_sessions").delete().eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
+            await sb.from("bot_sessions").update({ current_node_id: null, variables: {} }).eq("flow_id", flowId).eq("telegram_chat_id", chatIdNum);
             await processNode(start, nodes, edges, phoneNumberId, accessToken, from, msgContent, {}, sb, flowId, currentBotId);
-            break;
           }
         }
       }
