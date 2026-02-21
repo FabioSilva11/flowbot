@@ -514,18 +514,22 @@ Deno.serve(async (req) => {
             if (clickedBtn) vars.last_button_text = clickedBtn.text;
           }
           
-          // Determine next node ID to preserve session context
-          let nextNodeId: string | null = null;
+          // Process next nodes — processNode handles session saves internally
+          // (buttonReply/userInput nodes upsert the session with correct current_node_id)
+          let anyNodeProcessed = false;
           for (const e of edgesToFollow) {
             const nn = findNode(nodes, e.target);
             if (nn) {
-              nextNodeId = nn.id;
+              anyNodeProcessed = true;
               await processNode(nn, nodes, edges, token, chatId, originalBtnId, vars, sb, flowId, currentBotId);
             }
           }
-          // Update session to the next node instead of null — preserves context for chained buttons
-          await sb.from("bot_sessions").update({ current_node_id: nextNodeId, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatId);
-          // NÃO usa break — processa o fluxo normalmente
+          // Only clear session if no further nodes were processed (flow ended)
+          // Do NOT overwrite here — processNode already saved the correct current_node_id
+          // if a buttonReply or userInput was reached in the chain
+          if (!anyNodeProcessed) {
+            await sb.from("bot_sessions").update({ current_node_id: null, variables: vars }).eq("flow_id", flowId).eq("telegram_chat_id", chatId);
+          }
 
         } else if (!isCb && cur?.type === "userInput") {
           const vn = cur.data.variableName || "user_response";
